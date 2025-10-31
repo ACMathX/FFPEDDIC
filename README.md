@@ -1,7 +1,11 @@
 # FFPEDDIC
 Solver for Fractional Fokker-Planck Equation with Dirac-Delta Initial Conditions
 
-Cite as:
+`chebfun-master` is from [chebfun](https://github.com/chebfun/chebfun)
+
+## Citation
+
+Please cite our paper if you find this repo useful:
 ```
 @article{ye2024fast,
     title={A fast and accurate solver for the fractional Fokker-Planck equation with Dirac-Delta initial conditions},
