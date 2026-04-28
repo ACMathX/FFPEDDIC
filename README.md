@@ -23,4 +23,4 @@ Please cite our paper if you find this repo useful:
 }
 ```
 
-Manuscript: [ [Journal Version](https://epubs.siam.org/doi/10.1137/24M1682907), [ArXiv Version](https://arxiv.org/abs/2407.15315) ]
+Manuscript: [ [Journal Version](https://doi.org/10.1137/24M1682907), [ArXiv Version](https://arxiv.org/abs/2407.15315) ]
