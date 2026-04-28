@@ -1,7 +1,7 @@
 # FFPEDDIC
 Solver for Fractional Fokker-Planck Equation with Dirac-Delta Initial Conditions
 
-`chebfun-master` is from [chebfun](https://github.com/chebfun/chebfun)
+`chebfun-master` is from [chebfun](https://github.com/chebfun/chebfun).
 
 The primary implementation resides in `C_FFPESolverV1M.m`, which contains all relevant method definitions. Example usages of key methods can be found in `test_step07a_accuracy_verification.m` and `test_step07b_graph_plot.m`.
 
@@ -11,16 +11,16 @@ The files `C_FFPEHalfAlpha.m`, `C_FFPEOneThirdAlpha.m`, `C_FFPETwoThirdsAlpha.m`
 
 Please cite our paper if you find this repo useful:
 ```
-@article{ye2024fast,
-    title={A fast and accurate solver for the fractional Fokker-Planck equation with Dirac-Delta initial conditions},
+@article{ye2026fast,
+    title={A Fast and Accurate Solver for the Fractional {F}okker--{P}lanck Equation with {D}irac-Delta Initial Conditions},
     author={Ye, Qihao and Tian, Xiaochuan and Wang, Dong},
-    journal={arXiv preprint arXiv:2407.15315},
-    year={2024}
+    journal={SIAM Journal on Scientific Computing},
+    volume={48},
+    number={2},
+    pages={A1050--A1074},
+    year={2026},
+    publisher={SIAM}
 }
 ```
 
-Manuscript: [
-[ArXiv Version](https://arxiv.org/abs/2407.15315)
-]
-
-Accepted by SIAM Journal on Scientific Computing (SISC)
+Manuscript: [ [Journal Version](https://epubs.siam.org/doi/10.1137/24M1682907), [ArXiv Version](https://arxiv.org/abs/2407.15315) ]
