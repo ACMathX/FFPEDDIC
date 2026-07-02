@@ -302,5 +302,5 @@ TSWLatexianTemp*
 
 .DS_Store
 
-test/*
-
+test/
+feed/

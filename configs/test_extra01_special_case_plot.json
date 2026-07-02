@@ -1,0 +1,10 @@
+{
+    "D_o": 1,
+    "D_f": 8,
+    "d": 1,
+    "y_limit": 2,
+    "y_number": 51,
+    "t_limit": 0.2,
+    "t_number": 51,
+    "digits": 64
+}

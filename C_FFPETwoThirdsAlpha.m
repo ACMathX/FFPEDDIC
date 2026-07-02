@@ -24,7 +24,7 @@ classdef C_FFPETwoThirdsAlpha < handle
             if self.D_o == 0
                 value = self.get_value_zero_D_o( y, t, d );
             else
-                error( 'No implementation!' );
+                error( 'C_FFPETwoThirdsAlpha:UnsupportedOrdinaryDiffusion', 'Positive D_o is not implemented for alpha = 2 / 3 special cases.' );
             end
         end
 

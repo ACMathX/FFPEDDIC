@@ -1,4 +1,4 @@
-classdef C_FFPESolverV1M < handle
+classdef C_FFPESolver < handle
     properties
         d     ( 1, 1 ) double { mustBeInteger }     = 1      % dimension
         alpha ( 1, 1 ) double { mustBePositive }    = 0.5    % fractional exponent
@@ -29,7 +29,7 @@ classdef C_FFPESolverV1M < handle
     end
 
     methods
-        function [ self ] = C_FFPESolverV1M( d, alpha, D_o, D_f, t )
+        function [ self ] = C_FFPESolver( d, alpha, D_o, D_f, t )
             self.d = d;
             self.alpha = alpha;
             self.D_o = D_o;
@@ -49,6 +49,7 @@ classdef C_FFPESolverV1M < handle
 
     methods % initializations
         function [ ] = windowing_function_initialization( self )
+            self.validate_windowing_parameters();
             M = self.M_ini;
             cell_length = 0;
             while M < self.M_lim
@@ -59,6 +60,7 @@ classdef C_FFPESolverV1M < handle
             self.s2 = cell( cell_length, 1 );
             self.w2 = cell( cell_length, 1 );
             self.v2 = cell( cell_length, 1 );
+            self.g2 = cell( cell_length, 1 );
 
             M = self.M_ini;
             cell_index = 1;
@@ -82,6 +84,15 @@ classdef C_FFPESolverV1M < handle
             if nargin < 4
                 eps = 1e-14;
             end
+            if n <= 0 || n ~= floor( n )
+                error( 'C_FFPESolver:InvalidQuadratureOrder', 'n must be a positive integer.' );
+            end
+            if L <= 0
+                error( 'C_FFPESolver:InvalidQuadratureInterval', 'L must be positive.' );
+            end
+            if eps <= 0
+                error( 'C_FFPESolver:InvalidTolerance', 'eps must be positive.' );
+            end
             self.L = L;
             FQ = C_FractionalQuadrature( self.alpha, self.D_f * self.t, self.L );
 
@@ -89,6 +100,7 @@ classdef C_FFPESolverV1M < handle
         end
 
         function [ ] = update_g2( self )
+            self.ensure_windowing_initialized();
             if self.d == 1
                 g = self.get_g_1d( self.D_o, self.D_f, self.alpha, self.t );
             else
@@ -114,6 +126,7 @@ classdef C_FFPESolverV1M < handle
 
     methods
         function [ value, convergence_flag, value_2_difference ] = get_value_1d( self, y )
+            self.ensure_general_initialized();
             f = self.get_f_1d( y, self.D_o, self.t );
             g_complement = self.get_g_complement_1d( y );
 
@@ -148,6 +161,7 @@ classdef C_FFPESolverV1M < handle
         end
 
         function [ value, convergence_flag, value_2_difference ] = get_value_hd( self, y )
+            self.ensure_general_initialized();
             % y > 0
             f = self.get_f( y, self.D_o, self.t );
             g_complement = self.get_g_complement( y );
@@ -183,6 +197,7 @@ classdef C_FFPESolverV1M < handle
         end
 
         function [ value, convergence_flag, value_2_difference ] = get_value_plain_1d( self, y, t, D_o )
+            self.ensure_windowing_initialized();
             f = self.get_f_1d( y, D_o, t );
             p_hat = self.get_p_hat_1d( y, D_o, self.D_f, self.alpha, t );
 
@@ -218,6 +233,7 @@ classdef C_FFPESolverV1M < handle
         end
 
         function [ value, convergence_flag, value_2_difference ] = get_value_plain_hd( self, y, t, D_o )
+            self.ensure_windowing_initialized();
             f = self.get_f( y, D_o, t );
             p_hat = self.get_p_hat( y, D_o, self.D_f, self.alpha, t );
 
@@ -255,6 +271,7 @@ classdef C_FFPESolverV1M < handle
 
     methods
         function [ value, convergence_flag, value_2_difference ] = get_value_zero_displacement_plain( self, t, D_o )
+            self.ensure_windowing_initialized();
             f = self.get_f_zero_displacement( D_o, t );
             p_hat = self.get_p_hat_zero_displacement( D_o, self.D_f, self.alpha, t );
 
@@ -297,8 +314,8 @@ classdef C_FFPESolverV1M < handle
             if abs( self.D_o ) < 1e-12
                 convergence_flag = true;
                 value_2_difference = 0;
-                value = ( self.D_f .* self.t ) .^ ( - self.d ./ 2 ./ self.alpha ) .* gamma( self.d ./ 2 ./ self.alpha + 1 );
-                value = value ./ ( 2 .* pi ) .^ self.d ./ self.d .* 2 .* pi .^ ( self.d ./ 2 ) ./ gamma( self.d ./ 2 );
+                value = ( self.D_f .* self.t ) .^ ( - self.d ./ 2 ./ self.alpha ) .* builtin( 'gamma', self.d ./ 2 ./ self.alpha + 1 );
+                value = value ./ ( 2 .* pi ) .^ self.d ./ self.d .* 2 .* pi .^ ( self.d ./ 2 ) ./ builtin( 'gamma', self.d ./ 2 );
                 return;
             end
             [ value, convergence_flag, value_2_difference ] = self.get_value_zero_displacement();
@@ -314,6 +331,9 @@ classdef C_FFPESolverV1M < handle
 
     methods
         function [ value ] = get_value_no_fractional_diffusion( self, y )
+            if self.D_o < 1e-14
+                error( 'C_FFPESolver:NoDiffusion', 'At least one diffusion coefficient must be positive.' );
+            end
             denominator1 = 4 * self.D_o * self.t;
             denominator2 = ( denominator1 * pi ) .^ self.d_h;
             value = exp( - y .^ 2 ./ denominator1 ) ./ denominator2;
@@ -443,8 +463,39 @@ classdef C_FFPESolverV1M < handle
         end
 
         function [ value ] = compute_coefficient( n )
-            value = 2 .* ( pi .^ ( ( n + 1 ) ./ 2 ) ) ./ gamma( ( n + 1 ) ./ 2 );
+            value = 2 .* ( pi .^ ( ( n + 1 ) ./ 2 ) ) ./ builtin( 'gamma', ( n + 1 ) ./ 2 );
             value = value ./ ( 2 .* pi );
+        end
+    end
+
+    methods ( Access = private )
+        function [ ] = validate_windowing_parameters( self )
+            if self.gamma >= 1
+                error( 'C_FFPESolver:InvalidGamma', 'gamma must satisfy 0 < gamma < 1.' );
+            end
+            if self.M_ini >= self.M_lim
+                error( 'C_FFPESolver:InvalidWindowingBounds', 'M_ini must be smaller than M_lim.' );
+            end
+        end
+
+        function [ ] = ensure_windowing_initialized( self )
+            if isempty( self.s2 ) || isempty( self.w2 ) || isempty( self.v2 )
+                error( 'C_FFPESolver:MissingWindowingInitialization', 'Call windowing_function_initialization or general_initialization before evaluation.' );
+            end
+        end
+
+        function [ ] = ensure_quadrature_initialized( self )
+            if isempty( self.s1 ) || isempty( self.w1 )
+                error( 'C_FFPESolver:MissingQuadratureInitialization', 'Call quadrature_initialization or general_initialization before evaluation.' );
+            end
+        end
+
+        function [ ] = ensure_general_initialized( self )
+            self.ensure_windowing_initialized();
+            self.ensure_quadrature_initialized();
+            if isempty( self.g2 ) || any( cellfun( @isempty, self.g2 ) )
+                error( 'C_FFPESolver:MissingKernelPrecomputation', 'Call update_g2 or general_initialization before evaluation.' );
+            end
         end
     end
 end

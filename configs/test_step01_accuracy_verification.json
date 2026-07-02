@@ -1,0 +1,15 @@
+{
+    "D_o": 0,
+    "alpha_numerator": 3,
+    "alpha_denominator": 23,
+    "D_f": 8,
+    "d": 1,
+    "test_type": 1,
+    "delta_t": 0.04,
+    "y": 1.92,
+    "y_limit": 2,
+    "y_number": 51,
+    "t_limit": 0.2,
+    "t_number": 51,
+    "digits": 64
+}

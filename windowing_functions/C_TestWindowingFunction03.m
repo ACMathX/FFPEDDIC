@@ -1,10 +1,19 @@
 classdef C_TestWindowingFunction03 < C_WindowingFunction
     properties
-        beta (1, 1) double {mustBePositive} = 1.5 % power parameter
+        beta ( 1, 1 ) double { mustBePositive } = 1.5 % power parameter
     end
 
     methods
         function [ self ] = C_TestWindowingFunction03( M, gamma, beta )
+            if nargin < 1
+                M = 10;
+            end
+            if nargin < 2
+                gamma = 0.5;
+            end
+            if nargin < 3
+                beta = 1.5;
+            end
             self@C_WindowingFunction( M, gamma );
             self.beta = beta;
         end

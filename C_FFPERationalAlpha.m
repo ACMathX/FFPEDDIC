@@ -8,7 +8,18 @@ classdef C_FFPERationalAlpha < handle
 
     methods
         function [ self ] = C_FFPERationalAlpha( p, q, D_o, D_f )
-            assert( gcd( p, q ) == 1 );
+            if nargin < 1
+                p = self.p;
+            end
+            if nargin < 2
+                q = self.q;
+            end
+            if gcd( p, q ) ~= 1
+                error( 'C_FFPERationalAlpha:InvalidRationalAlpha', 'p and q must be coprime.' );
+            end
+            if p >= q
+                error( 'C_FFPERationalAlpha:InvalidRationalAlpha', 'p / q must be less than 1.' );
+            end
             self.p = p;
             self.q = q;
             if nargin > 2
@@ -29,7 +40,7 @@ classdef C_FFPERationalAlpha < handle
             if self.D_o == 0
                 value = self.get_value_zero_D_o( y, t, d );
             else
-                error( 'No implementation!' );
+                error( 'C_FFPERationalAlpha:UnsupportedOrdinaryDiffusion', 'Positive D_o is not implemented for rational alpha special cases.' );
             end
         end
 
