@@ -301,6 +301,8 @@ TSWLatexianTemp*
 #*Notes.bib
 
 .DS_Store
+*.pyc
 
 test/
 feed/
+python_reference/

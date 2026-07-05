@@ -2,58 +2,22 @@
 
 Solver for the Fractional Fokker-Planck Equation with Dirac-Delta Initial Conditions.
 
-This repository implements the fast quadrature/windowing solver described in the paper below, together with special-case reference solvers for selected fractional exponents. The bundled `chebfun-master` directory is from [Chebfun](https://github.com/chebfun/chebfun).
+This repository contains MATLAB and Python implementations of the fast quadrature/windowing solver described in the paper below, together with special-case solvers for selected fractional exponents.
 
-## What Is Included
+## Structure
 
-- `C_FFPESolver.m`: primary adaptive quadrature/windowing solver for the fractional Fokker-Planck density.
-- `C_FractionalQuadrature.m`: fractional-weight quadrature rules and expansion-based quadrature helpers.
-- `C_LegendrePolynomial.m`: Legendre polynomial helpers used by quadrature construction.
-- `C_WindowingFunction.m` and `windowing_functions/`: reusable windowing-function base class and concrete test window functions.
-- `C_FFPEHalfAlpha.m`: reference/special-case solver for `alpha = 1 / 2`.
-- `C_FFPEOneThirdAlpha.m`: reference/special-case solver for `alpha = 1 / 3`.
-- `C_FFPETwoThirdsAlpha.m`: reference/special-case solver for `alpha = 2 / 3`.
-- `C_FFPERationalAlpha.m`: reference/special-case solver for rational `alpha = p / q` when `D_o = 0`.
-- `configs/`: JSON inputs for runnable experiment and plotting scripts.
-- `test_step01_accuracy_verification.m`: accuracy comparison between the general solver and special-case solvers.
-- `test_step02_plot.m`: graph-generation script for the general solver.
-- `test_extra01_special_case_plot.m`: graph-generation script for the `alpha = 1 / 2` special-case solver.
+- `MATLAB_version/`: MATLAB solver, MATLAB scripts, `windowing_functions/`, and bundled `chebfun-master/`.
+- `python_version/`: Python solver, Python scripts, and Python package requirements.
+- `configs/`: shared JSON inputs used by both implementations.
 
-## Requirements
+Each implementation has its own README:
 
-- MATLAB with class validation syntax support.
-- Symbolic Math Toolbox for the special-case solvers that use `vpa`, `digits`, and `hypergeom`.
-- The bundled `chebfun-master` folder for `legpts` and `jacpts`.
+- [MATLAB_version/README.md](MATLAB_version/README.md)
+- [python_version/README.md](python_version/README.md)
 
-Run commands from the repository root unless you adjust paths manually.
+## Shared Configs
 
-## Quick Start
-
-```matlab
-addpath( 'chebfun-master' );
-addpath( 'windowing_functions' );
-
-d = 1;
-alpha = 3 / 23;
-D_o = 0;
-D_f = 8;
-delta_t = 0.04;
-y = 1.92;
-
-solver = C_FFPESolver( d, alpha, D_o, D_f, delta_t );
-solver.general_initialization();
-value = solver.get_value( y );
-```
-
-`general_initialization()` prepares the windowing-function samples, near-origin quadrature, and precomputed kernel values. Call it before `get_value`.
-
-## Config-Driven Scripts
-
-Script inputs live in `configs/*.json` and are loaded with `F_load_json_config.m`. Change dimensions, diffusion coefficients, grids, rational exponents, precision, and test modes in JSON files rather than editing scripts directly.
-
-```matlab
-config = F_load_json_config( 'configs/test_step01_accuracy_verification.json' );
-```
+Script inputs live in `configs/*.json`. Change dimensions, diffusion coefficients, grids, rational exponents, precision, and solver parameters in JSON files rather than editing scripts directly.
 
 Current config files:
 
@@ -61,48 +25,19 @@ Current config files:
 - `configs/test_step02_plot.json`
 - `configs/test_extra01_special_case_plot.json`
 
-## Running Examples
+## Quick Start
 
-Accuracy verification:
-
-```matlab
-test_step01_accuracy_verification
-```
-
-General solver surface plot:
+MATLAB:
 
 ```matlab
-test_step02_plot
+run( 'MATLAB_version/test_step01_accuracy_verification.m' )
 ```
 
-Special-case surface plot:
+Python:
 
-```matlab
-test_extra01_special_case_plot
+```bash
+python3 python_version/test_step01_accuracy_verification.py
 ```
-
-Only add dependency paths when needed. Scripts that use the general solver need both `chebfun-master` and `windowing_functions`; scripts that only use closed-form special-case solvers do not need those paths unless they call shared helpers requiring them.
-
-## Solver Notes
-
-The general solver supports ordinary diffusion coefficient `D_o`, fractional diffusion coefficient `D_f`, dimension `d`, fractional exponent `alpha`, and time `t`. For zero displacement, the solver uses a dedicated branch. If direct evaluation does not converge within the windowing bounds, scaling fallbacks are used.
-
-The special-case classes are useful for validation and high-precision comparison. Positive `D_o` is implemented for `C_FFPEHalfAlpha`; the `alpha = 1 / 3`, `alpha = 2 / 3`, and rational-alpha special cases currently raise descriptive errors when `D_o > 0`.
-
-## Common Edits
-
-- Change experiment parameters in `configs/*.json`.
-- Tune general-solver windowing through `M_ini`, `M_lim`, `gamma`, and `d_tol`.
-- Use `C_TestWindowingFunction01( M, gamma )`, `C_TestWindowingFunction02( M, gamma )`, or `C_TestWindowingFunction03( M, gamma, beta )` to inspect alternative window functions.
-- Use `F_load_json_config( file_name )` for new runnable scripts.
-
-## Troubleshooting
-
-- Missing `legpts` or `jacpts`: run `addpath( 'chebfun-master' )`.
-- Missing windowing class: run `addpath( 'windowing_functions' )`.
-- Missing initialization error: call `general_initialization()` before `get_value`.
-- Symbolic/MuPAD errors: verify Symbolic Math Toolbox is installed and working; special-case solvers depend on it.
-- Unsupported ordinary diffusion error: use the general solver or `C_FFPEHalfAlpha` when `D_o > 0`.
 
 ## Citation
 
