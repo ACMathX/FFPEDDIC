@@ -5,9 +5,10 @@ import numpy as np
 import torch
 from numpy.polynomial.legendre import legvander
 from scipy.integrate import quad
-from scipy.special import eval_legendre
 from scipy.special import roots_jacobi
 from scipy.special import roots_legendre
+
+from .legendre_polynomial import LegendrePolynomial
 
 
 @lru_cache( maxsize = 64 )
@@ -235,6 +236,7 @@ class FractionalQuadrature:
         self.delta_t = float( delta_t )
         self.L = float( L )
         self.interval = ( 0.0, self.L )
+        self.legendre_polynomial = LegendrePolynomial()
         self.validate_parameters()
 
     def validate_parameters( self ):
@@ -251,12 +253,16 @@ class FractionalQuadrature:
         y = 2.0 * s / self.L - 1.0
 
         F = np.zeros( int( n ), dtype = np.float64 )
+        P = [
+            self.legendre_polynomial.get_polynomial( polynomial_index )
+            for polynomial_index in range( int( n ) )
+        ]
 
         for k in range( int( n ) ):
-            def integrand( x, polynomial_index = k ):
+            def integrand( x, polynomial = P[ k ] ):
                 return (
                     math.exp( - abs( x ) ** beta * self.delta_t )
-                    * eval_legendre( polynomial_index, 2.0 * x / self.L - 1.0 )
+                    * polynomial( 2.0 * x / self.L - 1.0 )
                 )
 
             F[ k ], _ = quad(
